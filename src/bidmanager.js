@@ -1,6 +1,7 @@
 import { uniques, flatten, adUnitsFilter, getBidderRequest } from './utils';
-import {getPriceBucketString} from './cpmBucketManager';
-import {NATIVE_KEYS, nativeBidIsValid} from './native';
+import { getPriceBucketString } from './cpmBucketManager';
+import { NATIVE_KEYS, nativeBidIsValid } from './native';
+import { videoBidIsValid } from './video';
 import { store } from './videoCache';
 import { Renderer } from 'src/Renderer';
 import { config } from 'src/config';
@@ -119,8 +120,8 @@ exports.addBidResponse = function (adUnitCode, bid) {
       utils.logError(errorMessage('Native bid missing some required properties.'));
       return false;
     }
-    if (bid.mediaType === 'video' && !bid.vastUrl) {
-      utils.logError(errorMessage(`Video bid does not have required vastUrl property.`));
+    if (bid.mediaType === 'video' && !videoBidIsValid(bid)) {
+      utils.logError(errorMessage(`Video bid does not have required vastUrl or renderer property`));
       return false;
     }
     if (bid.mediaType === 'banner' && !validBidSize(bid)) {
