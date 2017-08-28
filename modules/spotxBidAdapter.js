@@ -1,17 +1,59 @@
-import Adapter from 'src/adapter';
-import bidfactory from 'src/bidfactory';
-import bidmanager from 'src/bidmanager';
-import adLoader from 'src/adloader';
-import * as utils from 'src/utils';
-import { STATUS } from 'src/constants';
-import adaptermanager from 'src/adaptermanager';
+pbjsChunk([23],{
+
+/***/ 201:
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(202);
+
+
+/***/ }),
+
+/***/ 202:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _adapter = __webpack_require__(7);
+
+var _adapter2 = _interopRequireDefault(_adapter);
+
+var _bidfactory = __webpack_require__(3);
+
+var _bidfactory2 = _interopRequireDefault(_bidfactory);
+
+var _bidmanager = __webpack_require__(2);
+
+var _bidmanager2 = _interopRequireDefault(_bidmanager);
+
+var _adloader = __webpack_require__(5);
+
+var _adloader2 = _interopRequireDefault(_adloader);
+
+var _utils = __webpack_require__(0);
+
+var utils = _interopRequireWildcard(_utils);
+
+var _constants = __webpack_require__(4);
+
+var _adaptermanager = __webpack_require__(1);
+
+var _adaptermanager2 = _interopRequireDefault(_adaptermanager);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 function Spotx() {
-  let baseAdapter = new Adapter('Spotx');
-  let bidReq;
-  let KVP_Object;
+  var baseAdapter = new _adapter2['default']('Spotx');
+  var bidReq = void 0;
+  var KVP_Object = void 0;
 
-  baseAdapter.callBids = function(bidRequest) {
+  baseAdapter.callBids = function (bidRequest) {
     if (!bidRequest || !bidRequest.bids || bidRequest.bids.length === 0) {
       return;
     }
@@ -28,7 +70,7 @@ function Spotx() {
   // Load the SpotX Direct AdOS SDK onto the page
   function loadDSDK() {
     var channelId = bidReq.params.video.channel_id;
-    adLoader.loadScript('//js.spotx.tv/directsdk/v1/' + channelId + '.js', initDSDK, true);
+    _adloader2['default'].loadScript('//js.spotx.tv/directsdk/v1/' + channelId + '.js', initDSDK, true);
   }
 
   // We have a Direct AdOS SDK! Set options and initialize it!
@@ -45,7 +87,7 @@ function Spotx() {
 
     var directAdOS = new SpotX.DirectAdOS(options);
 
-    directAdOS.getAdServerKVPs().then(function(adServerKVPs) {
+    directAdOS.getAdServerKVPs().then(function (adServerKVPs) {
       // Got an ad back. Build a successful response.
       var resp = {
         bids: []
@@ -57,19 +99,20 @@ function Spotx() {
       bid.url = adServerKVPs.spotx_ad_key;
       bid.cur = 'USD';
       bid.bidderCode = 'spotx';
-      bid.height = bidReq.sizes[0][1];
-      bid.width = bidReq.sizes[0][0];
+      var sizes = utils.isArray(bidReq.sizes[0]) ? bidReq.sizes[0] : bidReq.sizes;
+      bid.height = sizes[1];
+      bid.width = sizes[0];
       resp.bids.push(bid);
       KVP_Object = adServerKVPs;
       handleResponse(resp);
-    }, function() {
+    }, function () {
       // No ad...
-      handleResponse()
+      handleResponse();
     });
   }
 
   function createBid(status) {
-    var bid = bidfactory.createBid(status, utils.getBidRequest(bidReq.bidId));
+    var bid = _bidfactory2['default'].createBid(status, utils.getBidRequest(bidReq.bidId));
 
     // Stuff we have no matter what
     bid.bidderCode = bidReq.bidder;
@@ -78,16 +121,17 @@ function Spotx() {
     bid.code = bidReq.bidder;
 
     // Stuff we only get with a successful response
-    if (status === STATUS.GOOD && KVP_Object) {
-      let url = '//search.spotxchange.com/ad/vast.html?key=' + KVP_Object.spotx_ad_key;
+    if (status === _constants.STATUS.GOOD && KVP_Object) {
+      var url = '//search.spotxchange.com/ad/vast.html?key=' + KVP_Object.spotx_ad_key;
       bid.mediaType = 'video';
 
       bid.cpm = KVP_Object.spotx_bid;
       bid.vastUrl = url;
       bid.ad = url;
 
-      bid.width = bidReq.sizes[0][0];
-      bid.height = bidReq.sizes[0][1];
+      var sizes = utils.isArray(bidReq.sizes[0]) ? bidReq.sizes[0] : bidReq.sizes;
+      bid.height = sizes[1];
+      bid.width = sizes[0];
     }
 
     return bid;
@@ -96,14 +140,14 @@ function Spotx() {
   /* Notify Prebid of bid responses so bids can get in the auction */
   function handleResponse(response) {
     if (!response || !response.bids || !response.bids.length) {
-      bidmanager.addBidResponse(bidReq.placementCode, createBid(STATUS.NO_BID));
+      _bidmanager2['default'].addBidResponse(bidReq.placementCode, createBid(_constants.STATUS.NO_BID));
     } else {
-      bidmanager.addBidResponse(bidReq.placementCode, createBid(STATUS.GOOD, response.bids[0]));
+      _bidmanager2['default'].addBidResponse(bidReq.placementCode, createBid(_constants.STATUS.GOOD, response.bids[0]));
     }
   }
 
   function validateParams(request) {
-    if (typeof request.params !== 'object' && typeof request.params.video !== 'object') {
+    if (_typeof(request.params) !== 'object' && _typeof(request.params.video) !== 'object') {
       return false;
     }
 
@@ -114,14 +158,19 @@ function Spotx() {
     return true;
   }
 
-  return Object.assign(this, {
+  return _extends(this, {
     callBids: baseAdapter.callBids,
     setBidderCode: baseAdapter.setBidderCode
   });
 }
 
-adaptermanager.registerBidAdapter(new Spotx(), 'spotx', {
+_adaptermanager2['default'].registerBidAdapter(new Spotx(), 'spotx', {
   supportedMediaTypes: ['video']
 });
 
 module.exports = Spotx;
+
+/***/ })
+
+},[201]);
+//# sourceMappingURL=spotxBidAdapter.js.map
